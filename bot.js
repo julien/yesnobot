@@ -70,7 +70,7 @@ Bot.prototype._isMention = function (message) {
 Bot.prototype.getApiResponse = function (user) {
   var self = this;
 
-  return request.get('http://http://yesno.wtf/api')
+  return request.get('http://yesno.wtf/api')
     .on('response', function (res) {
       var buf = new Buffer('');
       res.on('data', function (chunk) {
@@ -78,9 +78,9 @@ Bot.prototype.getApiResponse = function (user) {
       });
       res.on('end', function () {
         var data = JSON.parse(buf);
-
-        self.postMessageToUser(user.name, data.answer, {
+        self.postMessageToUser(user.name, data.answer.toUpperCase(), {
           attachments:[{
+            fallback: data.answer,
             image_url: data.image
           }],
           as_user: true

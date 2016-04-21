@@ -24,20 +24,18 @@ Bot.prototype._onStart = function () {
 };
 
 Bot.prototype._onMessage = function (message) {
-  console.log(message);
   if (this._isChatMessage(message) && !this._isFromBot(message)) {
-
-
-    // var user = this._getUserByID(message.user);
-    // if (user) {
-    //   this.getApiResponse(user);
-    // }
-    //
-    var channel = this._getChannelByID(message.channel);
-    if (channel) {
-      this.getApiResponse(channel);
+    var user, type;
+    if (this._isChannelConversation(message)) {
+      user = this._getChannelByID(message.channel);
+      type = 'channel';
+    } else {
+      user = this._getUserByID(message.user);
+      type = 'user';
     }
-
+    if (user) {
+      this._getApiResponse(user, type);
+    }
   }
 };
 
@@ -85,7 +83,7 @@ Bot.prototype._isMention = function (message) {
   return t.match(/nickr/igm) || t.indexOf(this.name) > -1;
 };
 
-Bot.prototype.getApiResponse = function (user) {
+Bot.prototype._getApiResponse = function (user, type) {
   var self = this;
 
   return request.get('http://yesno.wtf/api')
@@ -96,21 +94,30 @@ Bot.prototype.getApiResponse = function (user) {
       });
       res.on('end', function () {
         var data = JSON.parse(buf);
-        // self.postMessageToUser(user.name, data.answer.toUpperCase(), {
-        //   attachments:[{
-        //     fallback: data.answer,
-        //     image_url: data.image
-        //   }],
-        //   as_user: true
-        // });
 
-        self.postMessageToChannel(user.name, data.answer.toUpperCase(), {
-          attachments:[{
-            fallback: data.answer,
-            image_url: data.image
-          }],
-          as_user: true
-        });
+        switch (type) {
+        case 'channel':
+          self.postMessageToUser(user.name, data.answer.toUpperCase(), {
+            attachments:[{
+              fallback: data.answer,
+              image_url: data.image
+            }],
+            as_user: true
+          });
+          break;
+
+        case 'user':
+          self.postMessageToUser(user.name, data.answer.toUpperCase(), {
+            attachments:[{
+              fallback: data.answer,
+              image_url: data.image
+            }],
+            as_user: true
+          });
+          break;
+
+        }
+
       });
     });
 };

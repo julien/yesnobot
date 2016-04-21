@@ -24,19 +24,41 @@ Bot.prototype._onStart = function () {
 };
 
 Bot.prototype._onMessage = function (message) {
-  if (this._isChatMessage(message) && !this._isFromBot(message)) {
-    var user, type;
-    if (this._isChannelConversation(message)) {
-      user = this._getChannelByID(message.channel);
-      type = 'channel';
-    } else {
-      user = this._getUserByID(message.user);
-      type = 'user';
-    }
+  if ((this._isChatMessage(message) || this._isMention(message)) && !this._isFromBot(message)) {
+
+    var user =  this._isChannelConversation(message) ?
+      this._getChannelByID(message.channel) :
+      this._getUserByID(message.user);
+
     if (user) {
-      this._getApiResponse(user, type);
+      this._getApiResponse(user);
     }
   }
+};
+
+Bot.prototype._getApiResponse = function (user, type) {
+  var self = this;
+
+  return request.get('http://yesno.wtf/api')
+    .on('response', function (res) {
+      var buf = new Buffer('');
+      res.on('data', function (chunk) {
+        buf = Buffer.concat([buf, chunk]);
+      });
+      res.on('end', function () {
+        var data = JSON.parse(buf);
+        var fn = user.is_channel ? self.postMessageToChannel : self.postMessageToUser;
+
+        fn.call(self, user.name, data.answer.toUpperCase(), {
+            attachments:[{
+              fallback: data.answer,
+              image_url: data.image
+            }],
+            as_user: true
+        });
+
+      });
+    });
 };
 
 Bot.prototype._getChannelByID = function (id) {
@@ -79,47 +101,10 @@ Bot.prototype._isFromBot = function (message) {
 };
 
 Bot.prototype._isMention = function (message) {
+  if (!message.text) return;
   var t = message.text.toLowerCase();
-  return t.match(/nickr/igm) || t.indexOf(this.name) > -1;
+  return t.match(/yesno/igm) || t.indexOf(this.name) > -1;
 };
 
-Bot.prototype._getApiResponse = function (user, type) {
-  var self = this;
-
-  return request.get('http://yesno.wtf/api')
-    .on('response', function (res) {
-      var buf = new Buffer('');
-      res.on('data', function (chunk) {
-        buf = Buffer.concat([buf, chunk]);
-      });
-      res.on('end', function () {
-        var data = JSON.parse(buf);
-
-        switch (type) {
-        case 'channel':
-          self.postMessageToUser(user.name, data.answer.toUpperCase(), {
-            attachments:[{
-              fallback: data.answer,
-              image_url: data.image
-            }],
-            as_user: true
-          });
-          break;
-
-        case 'user':
-          self.postMessageToUser(user.name, data.answer.toUpperCase(), {
-            attachments:[{
-              fallback: data.answer,
-              image_url: data.image
-            }],
-            as_user: true
-          });
-          break;
-
-        }
-
-      });
-    });
-};
 
 module.exports = Bot;

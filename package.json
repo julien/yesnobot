@@ -1,0 +1,25 @@
+{
+  "name": "yesno",
+  "version": "1.0.0",
+  "description": "A Slack Bot for the YESNOWTF API",
+  "main": "index.js",
+  "bin": {
+    "yesno": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/julien/yesno.git"
+  },
+  "author": "jcastelain",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/julien/yesno/issues"
+  },
+  "dependencies": {
+    "request": "^2.69.0",
+    "slackbots": "^0.5.1"
+  }
+}

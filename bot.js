@@ -9,7 +9,6 @@ function Bot(settings) {
   Bot.call(this, settings);
   this.settings = this.settings;
   this.user = null;
-  this.channel = null;
 }
 
 util.inherits(Bot, Bot);

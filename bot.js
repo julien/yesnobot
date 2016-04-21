@@ -4,6 +4,11 @@ var Bot = require('slackbots');
 var request = require('request');
 var util = require('util');
 
+/*
+ *
+ */
+
+
 
 function Bot(settings) {
   Bot.call(this, settings);
@@ -23,12 +28,13 @@ Bot.prototype._onStart = function () {
 };
 
 Bot.prototype._onMessage = function (message) {
-  if ((this._isChatMessage(message) || this._isMention(message)) && !this._isFromBot(message)) {
-
-    var user =  this._isChannelConversation(message) ?
-      this._getChannelByID(message.channel) :
-      this._getUserByID(message.user);
-
+  if (this._isChatMessage(message) && !this._isFromBot(message)) {
+    var user;
+    if (this._isChannelConversation(message) && this._isMention(message)) {
+      user = this._getChannelByID(message.channel);
+    } else {
+      user = this._getUserByID(message.user);
+    }
     if (user) {
       this._getApiResponse(user);
     }

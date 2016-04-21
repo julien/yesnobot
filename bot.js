@@ -9,6 +9,7 @@ function Bot(settings) {
   Bot.call(this, settings);
   this.settings = this.settings;
   this.user = null;
+  this.channel = null;
 }
 
 util.inherits(Bot, Bot);
@@ -23,11 +24,28 @@ Bot.prototype._onStart = function () {
 };
 
 Bot.prototype._onMessage = function (message) {
-  // console.log(message);
+  console.log(message);
   if (this._isChatMessage(message) && !this._isFromBot(message)) {
-    var user = this._getUserByID(message.user);
-    if (user) {
-      this.getApiResponse(user);
+
+
+    // var user = this._getUserByID(message.user);
+    // if (user) {
+    //   this.getApiResponse(user);
+    // }
+    //
+    var channel = this._getChannelByID(message.channel);
+    if (channel) {
+      this.getApiResponse(channel);
+    }
+
+  }
+};
+
+Bot.prototype._getChannelByID = function (id) {
+  var l = this.channels.length;
+  while (l--) {
+    if (this.channels[l].id === id) {
+      return this.channels[l];
     }
   }
 };
@@ -78,7 +96,15 @@ Bot.prototype.getApiResponse = function (user) {
       });
       res.on('end', function () {
         var data = JSON.parse(buf);
-        self.postMessageToUser(user.name, data.answer.toUpperCase(), {
+        // self.postMessageToUser(user.name, data.answer.toUpperCase(), {
+        //   attachments:[{
+        //     fallback: data.answer,
+        //     image_url: data.image
+        //   }],
+        //   as_user: true
+        // });
+
+        self.postMessageToChannel(user.name, data.answer.toUpperCase(), {
           attachments:[{
             fallback: data.answer,
             image_url: data.image
